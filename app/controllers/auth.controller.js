@@ -15,27 +15,32 @@ exports.login = (req, res) => {
 
     Users.findOne({where: {username: user.username}})
         .then(data => {
-            const decrypt = bcrypt.compareSync(user.password, data.password);
-            if(decrypt == true){
-
-                var token = jwt.sign({
-					id: data.id
-				}, config.JWTSECRET, {
-					expiresIn: 86400 //24h expired
-                });
-
-                res.cookie('token', token, { httpOnly: true });
-
-                res.json({
-                    status: 'ok',
-                    accessToken: token
+            if(data) {
+                const decrypt = bcrypt.compareSync(user.password, data.password);
+                if(decrypt == true){
+    
+                    var token = jwt.sign({
+                        id: data.id
+                    }, config.JWTSECRET, {
+                        expiresIn: 86400 //24h expired
+                    });
+    
+                    res.cookie('token', token, { httpOnly: true });
+    
+                    res.json({
+                        status: 'ok',
+                        accessToken: token
+                    })
+                }
+            }else{
+                res.status(401).json({
+                    status: 'fail'
                 })
             }
+
         })
         .catch(err => {
-            res.send({
-                message: "Something went wrong!"
-            });
+            console.log(err);
         })
 }
 
